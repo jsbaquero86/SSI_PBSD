@@ -1,88 +1,131 @@
-import io, os, sys, types
-from IPython import get_ipython
-from nbformat import read
-from IPython.core.interactiveshell import InteractiveShell
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-def find_notebook(fullname, path=None):
-    """find a notebook, given its fully qualified name and an optional path
+# Note: To use the 'upload' functionality of this file, you must:
+#   $ pipenv install twine --dev
 
-    This turns "foo.bar" into "foo/bar.ipynb"
-    and tries turning "Foo_Bar" into "Foo Bar" if Foo_Bar
-    does not exist.
-    """
-    name = fullname.rsplit('.', 1)[-1]
-    if not path:
-        path = ['']
-    for d in path:
-        nb_path = os.path.join(d, name + ".ipynb")
-        if os.path.isfile(nb_path):
-            return nb_path
-        # let import Notebook_Name find "Notebook Name.ipynb"
-        nb_path = nb_path.replace("_", " ")
-        if os.path.isfile(nb_path):
-            return nb_path
+import io
+import os
+import sys
+from shutil import rmtree
 
-class NotebookLoader(object):
-    """Module Loader for Jupyter Notebooks"""
+from setuptools import find_packages, setup, Command
 
-    def __init__(self, path=None):
-        self.shell = InteractiveShell.instance()
-        self.path = path
+# Package meta-data.
+NAME = 'ModuleImporter'
+DESCRIPTION = 'This python scripy is used to import .ipynb as modules to be used in jupyter notebook.'
+URL = 'https://github.com/jsbaquero86/my-first-binder/edit/main'
+EMAIL = 'jsbaquero@puce.edu.ec'
+AUTHOR = 'Juan Sebastian Baquero'
+REQUIRES_PYTHON = '>=3.6.0'
+VERSION = '0.1.0'
 
-    def load_module(self, fullname):
-        """import a notebook as a module"""
-        path = find_notebook(fullname, self.path)
+# What packages are required for this module to be executed?
+REQUIRED = [
+    # 'requests', 'maya', 'records',
+]
 
-        print("importing Jupyter notebook from %s" % path)
+# What packages are optional?
+EXTRAS = {
+    # 'fancy feature': ['django'],
+}
 
-        # load the notebook object
-        with io.open(path, 'r', encoding='utf-8') as f:
-            nb = read(f, 4)
+# The rest you shouldn't have to touch too much :)
+# ------------------------------------------------
+# Except, perhaps the License and Trove Classifiers!
+# If you do change the License, remember to change the Trove Classifier for that!
 
-        # create the module and add it to sys.modules
-        # if name in sys.modules:
-        #    return sys.modules[name]
-        mod = types.ModuleType(fullname)
-        mod.__file__ = path
-        mod.__loader__ = self
-        mod.__dict__['get_ipython'] = get_ipython
-        sys.modules[fullname] = mod
+here = os.path.abspath(os.path.dirname(__file__))
 
-        # extra work to ensure that magics that would affect the user_ns
-        # actually affect the notebook module's ns
-        save_user_ns = self.shell.user_ns
-        self.shell.user_ns = mod.__dict__
+# Import the README and use it as the long-description.
+# Note: this will only work if 'README.md' is present in your MANIFEST.in file!
+try:
+    with io.open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
+        long_description = '\n' + f.read()
+except FileNotFoundError:
+    long_description = DESCRIPTION
 
+# Load the package's __version__.py module as a dictionary.
+about = {}
+if not VERSION:
+    project_slug = NAME.lower().replace("-", "_").replace(" ", "_")
+    with open(os.path.join(here, project_slug, '__version__.py')) as f:
+        exec(f.read(), about)
+else:
+    about['__version__'] = VERSION
+
+
+class UploadCommand(Command):
+    """Support setup.py upload."""
+
+    description = 'Build and publish the package.'
+    user_options = []
+
+    @staticmethod
+    def status(s):
+        """Prints things in bold."""
+        print('\033[1m{0}\033[0m'.format(s))
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
         try:
-            for cell in nb.cells:
-                if cell.cell_type == 'code':
-                    # transform the input to executable Python
-                    code = self.shell.input_transformer_manager.transform_cell(cell.source)
-                    # run the code in themodule
-                    exec(code, mod.__dict__)
-        finally:
-            self.shell.user_ns = save_user_ns
-        return mod
+            self.status('Removing previous builds…')
+            rmtree(os.path.join(here, 'dist'))
+        except OSError:
+            pass
 
-class NotebookFinder(object):
-    """Module finder that locates Jupyter Notebooks"""
+        self.status('Building Source and Wheel (universal) distribution…')
+        os.system('{0} setup.py sdist bdist_wheel --universal'.format(sys.executable))
 
-    def __init__(self):
-        self.loaders = {}
+        self.status('Uploading the package to PyPI via Twine…')
+        os.system('twine upload dist/*')
 
-    def find_module(self, fullname, path=None):
-        nb_path = find_notebook(fullname, path)
-        if not nb_path:
-            return
+        self.status('Pushing git tags…')
+        os.system('git tag v{0}'.format(about['__version__']))
+        os.system('git push --tags')
 
-        key = path
-        if path:
-            # lists aren't hashable
-            key = os.path.sep.join(path)
+        sys.exit()
 
-        if key not in self.loaders:
-            self.loaders[key] = NotebookLoader(path)
-        return self.loaders[key]
 
-# NotebookFinder class is added to metapath to be able to import *.ipynb files.
-sys.meta_path.append(NotebookFinder())
+# Where the magic happens:
+setup(
+    name=NAME,
+    version=about['__version__'],
+    description=DESCRIPTION,
+    long_description=long_description,
+    long_description_content_type='text/markdown',
+    author=AUTHOR,
+    author_email=EMAIL,
+    python_requires=REQUIRES_PYTHON,
+    url=URL,
+    # packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
+    # If your package is a single module, use this instead of 'packages':
+    py_modules=['ModuleImporter'],
+
+    entry_points={
+        'console_scripts': ['mycli=mymodule:cli'],
+    },
+    install_requires=REQUIRED,
+    extras_require=EXTRAS,
+    include_package_data=True,
+    license='MIT',
+    classifiers=[
+        # Trove classifiers
+        # Full list: https://pypi.python.org/pypi?%3Aaction=list_classifiers
+        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: Implementation :: CPython',
+        'Programming Language :: Python :: Implementation :: PyPy'
+    ],
+    # $ setup.py publish support.
+    cmdclass={
+        'upload': UploadCommand,
+    },
+)
