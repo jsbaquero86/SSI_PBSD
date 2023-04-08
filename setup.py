@@ -12,11 +12,11 @@ from shutil import rmtree
 from setuptools import find_packages, setup, Command
 
 # Package meta-data.
-NAME = 'mynotebookmodule'
-DESCRIPTION = 'This python scripy is used to import .ipynb as modules to be used in jupyter notebook.'
-URL = 'https://github.com/jsbaquero86/my-first-binder/edit/main'
-EMAIL = 'jsbaquero@puce.edu.ec'
-AUTHOR = 'Juan Sebastian Baquero'
+NAME = 'ModuleImporter'
+DESCRIPTION = 'My short description for my project.'
+URL = 'https://github.com/me/myproject'
+EMAIL = 'me@example.com'
+AUTHOR = 'Awesome Soul'
 REQUIRES_PYTHON = '>=3.6.0'
 VERSION = '0.1.0'
 
@@ -103,13 +103,13 @@ setup(
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    # packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
+    packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
     # If your package is a single module, use this instead of 'packages':
-    py_modules=['mynotebookmodule'],
+    # py_modules=['mypackage'],
 
-    entry_points={
-        'console_scripts': ['mycli=mymodule:cli'],
-    },
+    # entry_points={
+    #     'console_scripts': ['mycli=mymodule:cli'],
+    # },
     install_requires=REQUIRED,
     extras_require=EXTRAS,
     include_package_data=True,
