@@ -99,13 +99,11 @@ def pmimporter(activate=True):
     if activate == True:
         import numpy as np
         from pathlib import Path
-        from tqdm import tqdm
         import pandas as pd
         import pickle
         from joblib import load
         from sklearn.preprocessing import MinMaxScaler, StandardScaler
         from matplotlib import pyplot as plt
-        import pandas as pd
     else:
         pass
 
