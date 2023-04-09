@@ -12,12 +12,12 @@ from shutil import rmtree
 from setuptools import find_packages, setup, Command
 
 # Package meta-data.
-NAME = 'ModuleImporter'
-DESCRIPTION = 'My short description for my project.'
-URL = 'https://github.com/me/myproject'
-EMAIL = 'me@example.com'
-AUTHOR = 'Awesome Soul'
-REQUIRES_PYTHON = '>=3.6.0'
+NAME = 'modifiers'
+DESCRIPTION = 'This package includes some modules to generate the modification factors estimation.'
+URL = 'https://github.com/jsbaquero86/SSI_PBSD'
+EMAIL = 'jsbaquero@puce.edu.ec'
+AUTHOR = 'Juan Sebastian Baquero'
+REQUIRES_PYTHON = '>=3.8.10'
 VERSION = '0.1.0'
 
 # What packages are required for this module to be executed?
