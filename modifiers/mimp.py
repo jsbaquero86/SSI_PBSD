@@ -1,5 +1,12 @@
 """Script used to let JupyterLab notebook import other notebooks as modules. It also
 contains a definition that lets import all necesary pacjakes and modules for the repository."""
+import numpy as np
+from pathlib import Path
+import pandas as pd
+import pickle
+from joblib import load
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from matplotlib import pyplot as plt
 
 def nbimporter(activate=True):
     if activate == True:
